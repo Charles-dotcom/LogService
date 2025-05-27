@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      terraform: 1.1.0
+    commands:
+      - curl -Lo sops https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
+      - mv sops /usr/local/bin/sops
+      - chmod +x /usr/local/bin/sops
+  pre_build:
+    commands:
+      - zip lambda.zip lambda/handler.py
+      - terraform init
+  build:
+    commands:
+      - terraform apply -auto-approve -var-file=terraform.tfvars
+
+artifacts:
+  files:
+    - lambda.zip
