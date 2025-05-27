@@ -39,7 +39,7 @@ jobs:
         run: terraform plan -var-file=terraform.tfvars -out=plan.tfplan
 
       - name: Save Plan
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: terraform-plan
           path: plan.tfplan
