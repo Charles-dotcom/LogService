@@ -1,0 +1,45 @@
+name: Terraform Plan
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::ACCOUNT_ID:role/github-actions-role
+          aws-region: us-east-1
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.0
+
+      - name: Install SOPS
+        run: |
+          curl -Lo sops https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
+          mv sops /usr/local/bin/sops
+          chmod +x /usr/local/bin/sops
+
+      - name: Zip Lambda code
+        run: zip lambda.zip lambda/handler.py
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=terraform.tfvars -out=plan.tfplan
+
+      - name: Save Plan
+        uses: actions/upload-artifact@v2
+        with:
+          name: terraform-plan
+          path: plan.tfplan
