@@ -17,7 +17,8 @@ provider "aws" {
 
 provider "sops" {}
 
-# Read encrypted secrets
+data "aws_caller_identity" "current" {}
+
 data "sops_file" "secrets" {
   source_file = "secrets.enc.json"
 }
@@ -59,6 +60,7 @@ resource "aws_dynamodb_table" "logs" {
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
   name = "lambda-role-${var.environment}"
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -76,6 +78,7 @@ resource "aws_iam_role" "lambda_role" {
 resource "aws_iam_role_policy" "lambda_policy" {
   name   = "lambda-policy-${var.environment}"
   role   = aws_iam_role.lambda_role.id
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -106,7 +109,7 @@ resource "aws_lambda_function" "log_receiver" {
   handler       = "handler.log_receiver"
   runtime       = "python3.8"
   role          = aws_iam_role.lambda_role.arn
-  filename      = "lambda.zip" # ZIP file containing handler.py
+  filename      = "lambda.zip"
   source_code_hash = filebase64sha256("lambda.zip")
 
   environment {
@@ -122,7 +125,7 @@ resource "aws_lambda_function" "get_logs" {
   handler       = "handler.get_logs"
   runtime       = "python3.8"
   role          = aws_iam_role.lambda_role.arn
-  filename      = "lambda.zip" # ZIP file containing handler.py
+  filename      = "lambda.zip"
   source_code_hash = filebase64sha256("lambda.zip")
 
   environment {
@@ -144,7 +147,7 @@ resource "aws_api_gateway_resource" "logs_resource" {
   path_part   = "logs"
 }
 
-# POST Endpoint
+# POST Method
 resource "aws_api_gateway_method" "post_logs" {
   rest_api_id   = aws_api_gateway_rest_api.log_service.id
   resource_id   = aws_api_gateway_resource.logs_resource.id
@@ -162,7 +165,7 @@ resource "aws_api_gateway_integration" "post_logs_integration" {
   uri                     = aws_lambda_function.log_receiver.invoke_arn
 }
 
-# GET Endpoint
+# GET Method
 resource "aws_api_gateway_method" "get_logs" {
   rest_api_id   = aws_api_gateway_rest_api.log_service.id
   resource_id   = aws_api_gateway_resource.logs_resource.id
@@ -180,17 +183,17 @@ resource "aws_api_gateway_integration" "get_logs_integration" {
   uri                     = aws_lambda_function.get_logs.invoke_arn
 }
 
-# API Key
+# API Key and Usage Plan
 resource "aws_api_gateway_api_key" "log_service_key" {
   name  = "log-service-key-${var.environment}"
   value = data.sops_file.secrets.data["api_key"]
 }
 
 resource "aws_api_gateway_usage_plan" "log_service_usage_plan" {
-  name = "log-service-usage-plan-${var.environment}"
+  name        = "log-service-usage-plan-${var.environment}"
   api_stages {
     api_id = aws_api_gateway_rest_api.log_service.id
-    stage  = aws_api_gateway_deployment.log_service_deployment.stage_name
+    stage  = aws_api_gateway_stage.log_service_stage.stage_name
   }
 }
 
@@ -200,14 +203,19 @@ resource "aws_api_gateway_usage_plan_key" "log_service_usage_plan_key" {
   usage_plan_id = aws_api_gateway_usage_plan.log_service_usage_plan.id
 }
 
-# API Deployment
+# API Gateway Deployment and Stage
 resource "aws_api_gateway_deployment" "log_service_deployment" {
   rest_api_id = aws_api_gateway_rest_api.log_service.id
-  stage_name  = var.environment
   depends_on  = [
     aws_api_gateway_integration.post_logs_integration,
     aws_api_gateway_integration.get_logs_integration
   ]
+}
+
+resource "aws_api_gateway_stage" "log_service_stage" {
+  deployment_id = aws_api_gateway_deployment.log_service_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.log_service.id
+  stage_name    = var.environment
 }
 
 # Lambda Permissions for API Gateway
