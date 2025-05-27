@@ -15,7 +15,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::ACCOUNT_ID:role/github-actions-role
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/github-actions-role
           aws-region: us-east-1
 
       - name: Install Terraform
@@ -41,5 +41,5 @@ jobs:
       - name: Save Plan
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-plan
+          name: terraform-plan4
           path: plan.tfplan
