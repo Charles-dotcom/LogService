@@ -12,7 +12,7 @@ terraform {
 }
 
 provider "aws" {
-  region = var.region
+  region = "eu-north-1"
 }
 
 
