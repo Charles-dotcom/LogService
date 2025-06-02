@@ -1,9 +1,20 @@
 name: Terraform Plan
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Which environment?'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+      aws_user:
+        description: 'AWS IAM user/role (default: github-actions-user)'
+        required: false
+        default: 'github-actions-user'
 
 jobs:
   terraform-plan:
@@ -11,6 +22,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment }}
+      AWS_USER: ${{ github.event.inputs.aws_user }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -18,7 +32,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::764678966183:role/github-actions-role
+          role-to-assume: arn:aws:iam::764678966183:role/${{ env.AWS_USER }}
           aws-region: us-east-1
 
       - name: Install Terraform
@@ -39,10 +53,10 @@ jobs:
         run: terraform init
 
       - name: Terraform Plan
-        run: terraform plan -var-file=terraform.tfvars -out=plan.tfplan
+        run: terraform plan -var="environment=${{ env.ENVIRONMENT }}" -out=plan.tfplan
 
       - name: Save Plan
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-plan4
+          name: terraform-plan-${{ env.ENVIRONMENT }}-latest
           path: plan.tfplan
