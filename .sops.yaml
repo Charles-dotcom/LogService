@@ -1,3 +1,4 @@
 creation_rules:
   - path_regex: .*
     kms: arn:aws:kms:eu-north-1:764678966183:key/a6155e20-0862-4d84-8457-b2b43be79b64
+    aws_profile: Charles
