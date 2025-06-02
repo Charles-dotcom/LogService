@@ -54,8 +54,8 @@ jobs:
         run: terraform init
 
       - name: Terraform Plan
-        run: terraform plan -var="environment=${{ env.ENVIRONMENT }}" -out=plan.tfplan
-
+        run: terraform plan -var="environment=${{ env.ENVIRONMENT }}" -var="sops_user_arn=arn:aws:iam::764678966183:user/${{ env.AWS_USER }}" -out=plan.tfplan
+        
       - name: Save Plan
         uses: actions/upload-artifact@v4
         with:
