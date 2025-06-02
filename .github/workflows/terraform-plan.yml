@@ -67,7 +67,11 @@ jobs:
           export AWS_DEFAULT_REGION=eu-north-1
           export AWS_SDK_LOAD_CONFIG=1
           sops -d secrets.json
-          
+
+      - name: Test AWS CLI with KMS
+        run: |
+         aws kms describe-key --key-id arn:aws:kms:eu-north-1:764678966183:key/a6155e20-0862-4d84-8457-b2b43be79b64 --region eu-north-1
+
       - name: Terraform Init
         run: terraform init
       
