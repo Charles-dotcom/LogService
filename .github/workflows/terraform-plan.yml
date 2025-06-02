@@ -50,6 +50,12 @@ jobs:
       - name: Zip Lambda code
         run: zip lambda.zip lambda/handler.py
 
+      - name: Update CA Certificates
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates
+          sudo update-ca-certificates
+
       - name: Decrypt Secret
         run: sops -d secrets.json > secrets.dec.json
 
