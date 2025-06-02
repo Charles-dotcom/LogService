@@ -35,9 +35,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
-
-      - name: Decrypt secrets.json
-        run: sops -d secrets.json > secrets.dec.json
           
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
@@ -52,6 +49,9 @@ jobs:
 
       - name: Zip Lambda code
         run: zip lambda.zip lambda/handler.py
+
+      - name: Decrypt Secret
+        run: sops -d secrets.json > secrets.dec.json
 
       - name: Terraform Init
         run: terraform init
