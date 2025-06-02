@@ -15,11 +15,17 @@ provider "aws" {
   region = var.region
 }
 
+provider "aws" {
+  alias  = "eu_north_1"
+  region = "eu-north-1"
+}
+
 provider "sops" {}
 
 data "aws_caller_identity" "current" {}
 
 data "sops_file" "secrets" {
+  provider    = aws.eu_north_1
   source_file = "secrets.json"
 }
 
