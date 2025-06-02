@@ -40,6 +40,9 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.7
+      
+      - name: Set AWS profile for SOPS
+        run: echo "AWS_PROFILE=Charles" >> $GITHUB_ENV
 
       - name: Install SOPS
         run: |
