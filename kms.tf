@@ -33,5 +33,3 @@ resource "aws_kms_alias" "sops_key_alias" {
   name          = "alias/sops-key-${var.environment}"
   target_key_id = aws_kms_key.sops_key.key_id
 }
-
-data "aws_caller_identity" "current" {}
