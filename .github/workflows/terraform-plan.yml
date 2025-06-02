@@ -55,12 +55,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ca-certificates
           sudo update-ca-certificates
+     
+      - name: Debug Environment
+        run: env | grep AWS
 
       - name: Terraform Init
         run: terraform init
+      
 
       - name: Terraform Plan
         run: terraform plan -var="environment=${{ env.ENVIRONMENT }}" -var="sops_user_arn=arn:aws:iam::764678966183:user/${{ env.AWS_USER }}" -out=plan.tfplan
+        env:
+          AWS_SDK_LOAD_CONFIG: true
+          AWS_PROFILE: ${{ env.AWS_USER }}
+          SOPS_KMS_PG: arn:aws:kms:eu-north-1:764678966183:key/a6155e20-0862-4d84-8457-b2b43be79b64
         
       - name: Save Plan
         uses: actions/upload-artifact@v4
