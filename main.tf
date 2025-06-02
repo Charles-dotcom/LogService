@@ -16,9 +16,16 @@ provider "aws" {
 }
 
 
-provider "sops" {}
+provider "sops" {
+  # Specify the SOPS provider configuration if needed
+  # For example, you can specify the KMS key or GPG key used for encryption
+   kms_key_id = "arn:aws:kms:eu-north-1:123456789012:key/a6155e20-0862-4d84-8457-b2b43be79b64"  
+}
 
 data "aws_caller_identity" "current" {}
+output "aws_account_id" {
+  value = data.aws_caller_identity.current.account_id
+}
 
 data "sops_file" "secrets" {
   source_file = "secrets.json"
