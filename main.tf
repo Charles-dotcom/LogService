@@ -20,11 +20,15 @@ provider "aws" {
   region = "eu-north-1"
 }
 
+provider "sops" {}
+
 data "aws_caller_identity" "current" {}
 
-locals {
-  secrets = jsondecode(file("secrets.json"))
+data "sops_file" "secrets" {
+  source_file = "secrets.json"
 }
+
+
 # DynamoDB Table
 resource "aws_dynamodb_table" "logs" {
   name           = "Logs-${var.environment}"
@@ -141,7 +145,6 @@ resource "aws_lambda_function" "get_logs" {
 resource "aws_api_gateway_rest_api" "log_service" {
   name        = "log-service-${var.environment}"
   description = "REST API for log service"
-
 }
 
 resource "aws_api_gateway_resource" "logs_resource" {

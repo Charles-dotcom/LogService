@@ -56,9 +56,6 @@ jobs:
           sudo apt-get install -y ca-certificates
           sudo update-ca-certificates
 
-      - name: Decrypt Secret
-        run: sops -d secrets.json > secrets.dec.json
-
       - name: Terraform Init
         run: terraform init
 
