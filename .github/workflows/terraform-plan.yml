@@ -41,25 +41,13 @@ jobs:
         with:
           terraform_version: 1.9.7
       
-      - name: Install SOPS (Windows)
-        run: choco install -y sops
-
-      - name: Decrypt secrets.json (Windows)
-        run: sops -d secrets.json > secrets.dec.json
+      - name: Download decrypted secrets
+        uses: actions/download-artifact@v4
+        with:
+          name: secrets-dec
 
       - name: Terraform Init
         run: terraform init
-      
+
       - name: Terraform Plan
         run: terraform plan -var="environment=${{ env.ENVIRONMENT }}" -var="sops_user_arn=arn:aws:iam::764678966183:user/${{ env.AWS_USER }}" -out=plan.tfplan
-    
-
-      - name: Save Plan
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-plan-${{ env.ENVIRONMENT }}-latest
-          path: plan.tfplan
-          
-      - name: Delete decrypted secrets
-        run: Remove-Item secrets.dec.json
-          
