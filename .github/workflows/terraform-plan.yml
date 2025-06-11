@@ -18,7 +18,7 @@ on:
 
 jobs:
   terraform-plan:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     permissions:
       id-token: write
       contents: read
@@ -41,11 +41,8 @@ jobs:
         with:
           terraform_version: 1.9.7
       
-      - name: Install SOPS
-        run: |
-          curl -Lo sops https://github.com/mozilla/sops/releases/download/v3.9.1/sops-v3.9.1.linux.amd64
-          mv sops /usr/local/bin/sops
-          chmod +x /usr/local/bin/sops
+      - name: Install SOPS (Windows)
+        run: choco install -y sops
 
       - name: Zip Lambda code
         run: zip lambda.zip lambda/handler.py
@@ -70,8 +67,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
-      - name: Decrypt secrets.json
-        run: sops -d --output secrets.json secrets.json
+
+      - name: Decrypt secrets.json (Windows)
+        run: |
+          "C:\ProgramData\chocolatey\lib\sops\tools\sops.exe" -d secrets.json > secrets.dec.json
 
       - name: Terraform Init
         run: terraform init
