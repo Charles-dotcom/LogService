@@ -1,14 +1,12 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
-export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
-export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-north-1}"
+echo "Running SOPS decryption..."
 
+# Optional: debug AWS identity inside the script
+aws sts get-caller-identity
+
+# Decrypt the file
 sops -d secrets.json > secrets.dec.json
-if [ -f secrets.dec.json ]; then
-    echo "Secrets decrypted successfully."
-else
-    echo "Failed to decrypt secrets."
-    exit 1
-fi
+
+echo "Decryption complete."
