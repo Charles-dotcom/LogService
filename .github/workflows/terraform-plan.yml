@@ -44,8 +44,8 @@ jobs:
       - name: Install SOPS (Windows)
         run: choco install -y sops
 
-      - name: Zip Lambda code (Windows)
-        run: Compress-Archive -Path lambda/handler.py -DestinationPath lambda.zip
+      # - name: Zip Lambda code (Windows)
+      #   run: Compress-Archive -Path lambda/handler.py -DestinationPath lambda.zip
         
       # - name: Update CA Certificates
       #   run: |
