@@ -68,9 +68,9 @@ jobs:
           aws-region: eu-north-1
 
 
-      - name: Decrypt secrets.json (Windows)
-        run: |
-          "C:\ProgramData\chocolatey\lib\sops\tools\sops.exe" -d secrets.json > secrets.dec.json
+      # - name: Decrypt secrets.json (Windows)
+      #   run: |
+      #     "C:\ProgramData\chocolatey\lib\sops\tools\sops.exe" -d secrets.json > secrets.dec.json
 
       - name: Terraform Init
         run: terraform init

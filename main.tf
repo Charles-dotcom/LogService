@@ -16,16 +16,17 @@ provider "aws" {
 }
 
 
-# provider "sops" {}
+provider "sops" {}
 
 data "aws_caller_identity" "current" {}
 output "aws_account_id" {
   value = data.aws_caller_identity.current.account_id
 }
 
-locals {
-  secrets = jsondecode(file("secrets.json"))
+data "sops_file" "secrets" {
+  source_file = "secrets.json"
 }
+
 
 # DynamoDB Table
 resource "aws_dynamodb_table" "logs" {
@@ -190,7 +191,7 @@ resource "aws_api_gateway_integration" "get_logs_integration" {
 # API Key and Usage Plan
 resource "aws_api_gateway_api_key" "log_service_key" {
   name  = "log-service-key-${var.environment}"
-  value = local.secrets["api_key"]
+  value = data.sops_file.secrets.data["api_key"]
 }
 
 resource "aws_api_gateway_usage_plan" "log_service_usage_plan" {
