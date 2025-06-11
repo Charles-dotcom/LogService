@@ -67,7 +67,7 @@ jobs:
 
       - name: Upload Terraform Plan to S3
         run: |
-          aws s3 cp plan.tfplan s3://logservicprojectbucketfile/${{ env.ENVIRONMENT }}/plan.tfplan
+          aws s3 cp plan.tfplan s3://terraformplans-logservice/${{ env.ENVIRONMENT }}/plan.tfplan
 
       - name: Delete decrypted secrets
         run: rm -f secrets.dec.json
