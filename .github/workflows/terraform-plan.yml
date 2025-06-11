@@ -44,41 +44,22 @@ jobs:
       - name: Install SOPS (Windows)
         run: choco install -y sops
 
-      # - name: Zip Lambda code (Windows)
-      #   run: Compress-Archive -Path lambda/handler.py -DestinationPath lambda.zip
-        
-      # - name: Update CA Certificates
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y ca-certificates
-      #     sudo update-ca-certificates
-     
-      - name: Debug Environment
-        run: env | grep AWS
-
-      - name: Test AWS CLI with KMS
-        run: |
-         aws kms describe-key --key-id arn:aws:kms:eu-north-1:764678966183:key/a6155e20-0862-4d84-8457-b2b43be79b64 --region eu-north-1
-
-      # - name: Configure AWS Credentials
-      #   uses: aws-actions/configure-aws-credentials@v4
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: eu-north-1
-
-
       - name: Decrypt secrets.json (Windows)
-        run: sops -d secrets.json > secrets.json
-        
+        run: sops -d secrets.json > secrets.dec.json
+
       - name: Terraform Init
         run: terraform init
       
       - name: Terraform Plan
         run: terraform plan -var="environment=${{ env.ENVIRONMENT }}" -var="sops_user_arn=arn:aws:iam::764678966183:user/${{ env.AWS_USER }}" -out=plan.tfplan
-          
+    
+
       - name: Save Plan
         uses: actions/upload-artifact@v4
         with:
           name: terraform-plan-${{ env.ENVIRONMENT }}-latest
           path: plan.tfplan
+          
+      - name: Delete decrypted secrets
+        run: Remove-Item secrets.dec.json
+          

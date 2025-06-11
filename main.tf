@@ -24,7 +24,7 @@ output "aws_account_id" {
 }
 
 locals {
-  secrets = jsondecode(file("secrets.json"))
+  secrets = jsondecode(file("secrets.dec.json"))
 }
 
 # DynamoDB Table
