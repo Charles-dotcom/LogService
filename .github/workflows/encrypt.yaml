@@ -49,5 +49,5 @@ jobs:
       - name: Upload encrypted secret
         uses: actions/upload-artifact@v4
         with:
-          name: sops-encrypted-secret
+          name: sopsencryptedsecret
           path: secrets.enc.json

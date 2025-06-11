@@ -46,7 +46,7 @@ jobs:
       - name: Download encrypted secrets
         uses: actions/download-artifact@v4
         with:
-          name: sops-encrypted-secret
+          name: sopsencryptedsecret
           path: .
 
       - name: Decrypt secrets
