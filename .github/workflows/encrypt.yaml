@@ -46,8 +46,6 @@ jobs:
             --kms "arn:aws:kms:eu-north-1:764678966183:key/a6155e20-0862-4d84-8457-b2b43be79b64" \
             secrets.json > secrets.enc.json
 
-      - name: Upload encrypted secret
-        uses: actions/upload-artifact@v4
-        with:
-          name: sopsencryptedsecret
-          path: secrets.enc.json
+      - name: Upload encrypted secret to S3
+        run: |
+          aws s3 cp secrets.enc.json s3://logservicprojectbucketfile/secrets.enc.json

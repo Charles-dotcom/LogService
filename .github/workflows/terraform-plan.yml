@@ -9,7 +9,7 @@ on:
         default: 'dev'
         type: choice
         options:
-          - dev
+          - Dev
           - prod
       aws_user:
         description: 'AWS IAM user/role (default: github-actions-user)'
@@ -57,12 +57,6 @@ jobs:
           sops -d secrets.enc.json > secrets.dec.json
           cat secrets.dec.json
 
-      - name: Upload decrypted secrets
-        uses: actions/upload-artifact@v4
-        with:
-          name: secrets-dec
-          path: secrets.dec.json
-
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -77,11 +71,9 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -var="environment=${{ env.ENVIRONMENT }}" -out=plan.tfplan
 
-      - name: Upload Terraform Plan
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-plan-${{ env.ENVIRONMENT }}-latest
-          path: plan.tfplan
+      - name: Upload Terraform Plan to S3
+        run: |
+          aws s3 cp plan.tfplan s3://logservicprojectbucketfile/${{ env.ENVIRONMENT }}/plan.tfplan
 
       - name: Delete decrypted secrets
         run: rm -f secrets.dec.json
