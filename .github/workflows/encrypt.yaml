@@ -33,9 +33,9 @@ jobs:
           API_KEY_NAME: ${{ github.event.inputs.api_key_name }}
         run: |
           echo "Creating secrets.json with key: $API_KEY_NAME"
-          echo "{\"$API_KEY_NAME\": \"dummy-value-replace-this\"}" > secrets.json
+          echo "{\"api_key\": \"$API_KEY_NAME\"}" > secrets.json
           cat secrets.json
-
+          
       - name: Encrypt secrets.json with SOPS
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
