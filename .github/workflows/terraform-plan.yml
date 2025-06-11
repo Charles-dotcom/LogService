@@ -9,7 +9,7 @@ on:
         default: 'dev'
         type: choice
         options:
-          - Dev
+          - dev
           - prod
       aws_user:
         description: 'AWS IAM user/role (default: github-actions-user)'
@@ -43,14 +43,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
-      - name: List artifacts
-        run: |
-          gh run download --all --repo ${{ github.repository }} --name sopsencryptedsecret || echo "Artifact not found"
-
-      - name: Download encrypted secrets
-        uses: actions/download-artifact@v4
-        with:
-          name: sopsencryptedsecret
+      - name: Download encrypted secrets from S3
+        run: aws s3 cp s3://logservicprojectbucketfile/secrets.enc.json secrets.enc.json
 
       - name: Decrypt secrets
         run: |
