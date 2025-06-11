@@ -1,3 +1,3 @@
 #!/bin/bash
 set -e
-sops -d secrets.json > secrets.dec.json
+/c/ProgramData/chocolatey/lib/sops/tools/sops.exe -d secrets.json > secrets.dec.json
