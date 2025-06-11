@@ -70,8 +70,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
-      # - name: Decrypt secrets.json
-      #   run: sops -d --output secrets.json secrets.json
+      - name: Decrypt secrets.json
+        run: sops -d --output secrets.json secrets.json
 
       - name: Terraform Init
         run: terraform init
