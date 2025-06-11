@@ -63,8 +63,15 @@ jobs:
         run: |
          aws kms describe-key --key-id arn:aws:kms:eu-north-1:764678966183:key/a6155e20-0862-4d84-8457-b2b43be79b64 --region eu-north-1
 
-      - name: Decrypt secrets.json
-        run: sops -d --output secrets.json secrets.json
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
+      # - name: Decrypt secrets.json
+      #   run: sops -d --output secrets.json secrets.json
 
       - name: Terraform Init
         run: terraform init
