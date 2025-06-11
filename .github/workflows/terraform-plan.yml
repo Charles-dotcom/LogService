@@ -1,4 +1,4 @@
-name: Terraform Plan
+name: Decrypt Secrets
 
 on:
   workflow_dispatch:
@@ -14,40 +14,51 @@ on:
       aws_user:
         description: 'AWS IAM user/role (default: github-actions-user)'
         required: false
-        default: 'github-actions-user'
+        default: 'Charles'
 
 jobs:
-  terraform-plan:
-    runs-on: windows-latest
+  decrypt-secrets:
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
     env:
       ENVIRONMENT: ${{ github.event.inputs.environment }}
       AWS_USER: ${{ github.event.inputs.aws_user }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
+      - name: Install SOPS
+        run: |
+          curl -Lo sops https://github.com/mozilla/sops/releases/download/v3.9.1/sops-v3.9.1.linux.amd64
+          chmod +x sops
+          sudo mv sops /usr/local/bin/
+
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
-          
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.9.7
-      
-      - name: Download decrypted secrets
+
+      - name: Download encrypted secrets
         uses: actions/download-artifact@v4
         with:
+          name: sops-encrypted-secret
+
+      - name: Decrypt secrets
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-north-1
+        run: |
+          sops -d secrets.enc.json > secrets.dec.json
+          cat secrets.dec.json
+
+      - name: Upload decrypted secrets
+        uses: actions/upload-artifact@v4
+        with:
           name: secrets-dec
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Plan
-        run: terraform plan -var="environment=${{ env.ENVIRONMENT }}" -var="sops_user_arn=arn:aws:iam::764678966183:user/${{ env.AWS_USER }}" -out=plan.tfplan
+          path: secrets.dec.json

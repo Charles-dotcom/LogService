@@ -1,10 +1,14 @@
-name: Decrypt Encrypted Secret
+name: Encrypt API Key
 
 on:
   workflow_dispatch:
+    inputs:
+      api_key_name:
+        description: 'Name of the API key (e.g., STRIPE_KEY)'
+        required: true
 
 jobs:
-  decrypt-api-key:
+  encrypt-api-key:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,24 +28,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
-      - name: Download encrypted secret
-        uses: actions/download-artifact@v4
-        with:
-          name: sops-encrypted-secret
-          path: .
+      - name: Create plaintext secrets.json
+        env:
+          API_KEY_NAME: ${{ github.event.inputs.api_key_name }}
+        run: |
+          echo "Creating secrets.json with key: $API_KEY_NAME"
+          echo "{\"$API_KEY_NAME\": \"dummy-value-replace-this\"}" > secrets.json
+          cat secrets.json
 
-      - name: Decrypt secrets.enc.json with SOPS
+      - name: Encrypt secrets.json with SOPS
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: eu-north-1
         run: |
-          echo "Decrypting secrets.enc.json..."
-          sops -d secrets.enc.json > secrets.dec.json
-          cat secrets.dec.json
+          sops --encrypt \
+            --kms "arn:aws:kms:eu-north-1:764678966183:key/a6155e20-0862-4d84-8457-b2b43be79b64" \
+            secrets.json > secrets.enc.json
 
-      - name: Upload decrypted file (for debugging / pipeline use)
+      - name: Upload encrypted secret
         uses: actions/upload-artifact@v4
         with:
-          name: sops-decrypted-secret
-          path: secrets.dec.json
+          name: sops-encrypted-secret
+          path: secrets.enc.json
