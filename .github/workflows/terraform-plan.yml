@@ -1,4 +1,4 @@
-name: Decrypt Secrets
+name: Terraform Plan
 
 on:
   workflow_dispatch:
